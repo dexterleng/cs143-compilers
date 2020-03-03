@@ -273,6 +273,7 @@ import java_cup.runtime.Symbol;
 
 <YYINITIAL>\" {
     yybegin(STRING);
+    string_buf.setLength(0);
 }
 
 <STRING>\\\n {
@@ -291,34 +292,54 @@ import java_cup.runtime.Symbol;
     yybegin(YYINITIAL);
 
     String str = string_buf.toString();
-    string_buf.setLength(0);
     StringBuffer newBuffer = new StringBuffer();
 
-    String[] escapeCharacters = { "\\n", "\\b", "\\t", "\\n", "\\f" };
-    char[] constantCharacters = { '\n', '\b', '\t', '\n', '\f' };
-
+    char[] mappableCharacters = { 'n', 'b', 't', 'f' };
+    char[] constantCharacters = { '\n', '\b', '\t', '\f' };
+    boolean isPreviousBackslashEscaped = false;
     for (char c : str.toCharArray()) {
-        if (c == '\n' || c == '\0') {
-            return new Symbol(TokenConstants.ERROR, "String contains null character");
+        Character previousCharacter = null;
+        if (newBuffer.length() > 0) {
+            previousCharacter = newBuffer.charAt(newBuffer.length() - 1);
         }
-        newBuffer.append(c);
-        if (newBuffer.length() >= 2) {
-            String lastTwo = newBuffer.substring(newBuffer.length() - 2);
-            if (!lastTwo.equals("\\\\") && lastTwo.charAt(0) == '\\') {
-                newBuffer.setLength(newBuffer.length() - 2);
-                boolean replacedWithConstantCharacter = false;
-                for (int i = 0; i < escapeCharacters.length; i++) {
-                    String escChar = escapeCharacters[i];
-                    if (lastTwo.equals(escChar)) {
-                        newBuffer.append(constantCharacters[i]);
-                        replacedWithConstantCharacter = true;
-                        break;
-                    }
-                }
-                if (!replacedWithConstantCharacter) {
-                    newBuffer.append(lastTwo.charAt(1));
+		boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+
+        if (c == '\\') {
+            if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+                isPreviousBackslashEscaped = true;
+            } else {
+                newBuffer.append('\\');
+                isPreviousBackslashEscaped = false;
+            }
+        } else {
+            boolean replaced = false;
+            for (int i = 0; i < mappableCharacters.length; i++) {
+                char mappableCharacter = mappableCharacters[i];
+                if (!isPreviousBackslashEscaped && previousCharacterIsBackslash && mappableCharacter == c) { 
+                    newBuffer.setLength(newBuffer.length() - 1);
+                    newBuffer.append(constantCharacters[i]);
+                    replaced = true;
+                    break;
                 }
             }
+
+            if (replaced) {
+				continue;
+            }
+
+            // catch unescaped null characters
+            if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
+                if (c == '\0') {
+                    return new Symbol(TokenConstants.ERROR, "String contains null character");
+                }
+            }
+
+            // remove previous backslash such that \c -> c.
+			if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+				newBuffer.setLength(newBuffer.length() - 1);	
+			}
+
+			newBuffer.append(c);
         }
     }
 
