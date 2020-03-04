@@ -25,16 +25,21 @@ class CoolLexer implements java_cup.runtime.Scanner {
     StringBuffer string_buf = new StringBuffer();
     private int curr_lineno = 1;
     int get_curr_lineno() {
-	return curr_lineno;
+	    return curr_lineno;
     }
     private int commentANestLevel = 0;
     private AbstractSymbol filename;
     void set_filename(String fname) {
-	filename = AbstractTable.stringtable.addString(fname);
+	    filename = AbstractTable.stringtable.addString(fname);
     }
     AbstractSymbol curr_filename() {
-	return filename;
+	    return filename;
     }
+    // string lexing stuff
+    char[] mappableCharacters = { 'n', 'b', 't', 'f' };
+    char[] constantCharacters = { '\n', '\b', '\t', '\f' };
+    boolean isPreviousBackslashEscaped = false;
+    boolean previousCharacterIsBackslash = false;   
 	private java.io.BufferedReader yy_reader;
 	private int yy_buffer_index;
 	private int yy_buffer_read;
@@ -82,9 +87,9 @@ class CoolLexer implements java_cup.runtime.Scanner {
 	private final int YYINITIAL = 0;
 	private final int yy_state_dtrans[] = {
 		0,
-		61,
+		60,
 		54,
-		85
+		83
 	};
 	private void yybegin (int state) {
 		yy_lexical_state = state;
@@ -285,8 +290,8 @@ class CoolLexer implements java_cup.runtime.Scanner {
 		/* 57 */ YY_NO_ANCHOR,
 		/* 58 */ YY_NO_ANCHOR,
 		/* 59 */ YY_NO_ANCHOR,
-		/* 60 */ YY_NO_ANCHOR,
-		/* 61 */ YY_NOT_ACCEPT,
+		/* 60 */ YY_NOT_ACCEPT,
+		/* 61 */ YY_NO_ANCHOR,
 		/* 62 */ YY_NO_ANCHOR,
 		/* 63 */ YY_NO_ANCHOR,
 		/* 64 */ YY_NO_ANCHOR,
@@ -308,9 +313,9 @@ class CoolLexer implements java_cup.runtime.Scanner {
 		/* 80 */ YY_NO_ANCHOR,
 		/* 81 */ YY_NO_ANCHOR,
 		/* 82 */ YY_NO_ANCHOR,
-		/* 83 */ YY_NO_ANCHOR,
+		/* 83 */ YY_NOT_ACCEPT,
 		/* 84 */ YY_NO_ANCHOR,
-		/* 85 */ YY_NOT_ACCEPT,
+		/* 85 */ YY_NO_ANCHOR,
 		/* 86 */ YY_NO_ANCHOR,
 		/* 87 */ YY_NO_ANCHOR,
 		/* 88 */ YY_NO_ANCHOR,
@@ -392,9 +397,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 		/* 164 */ YY_NO_ANCHOR,
 		/* 165 */ YY_NO_ANCHOR,
 		/* 166 */ YY_NO_ANCHOR,
-		/* 167 */ YY_NO_ANCHOR,
-		/* 168 */ YY_NO_ANCHOR,
-		/* 169 */ YY_NO_ANCHOR
+		/* 167 */ YY_NO_ANCHOR
 	};
 	private int yy_cmap[] = unpackFromString(1,130,
 "6:9,8,1,8:2,2,6:18,8,6,42,6:5,3,7,4,34,40,5,39,35,44:10,36,33,37,9,10,6,38," +
@@ -402,71 +405,71 @@ class CoolLexer implements java_cup.runtime.Scanner {
 "43,6:2,60,6,13,61,11,26,15,16,61,29,20,61:2,12,61,22,25,28,61,18,14,17,19,2" +
 "4,30,61:3,31,6,32,41,6,0:2")[0];
 
-	private int yy_rmap[] = unpackFromString(1,170,
-"0,1:3,2,3,4,1:2,5,6,7,1:6,8,1:5,9,1:4,10:2,11,10,1:2,10:15,1,12,1:2,13,1:6," +
-"14,10,15,16:3,17,16:14,18,19,20,21,22,23,1,24,25,26,27,28,29,30,31,32,33,34" +
+	private int yy_rmap[] = unpackFromString(1,168,
+"0,1:3,2,3,4,1:2,5,6,7,1:6,8,1:5,9,1:4,10:2,11,10,1:2,10:15,1,12,1:2,13,1:5," +
+"14,10,15,16:3,17,16:14,18,19,20,21,22,1,23,24,25,26,27,28,29,30,31,32,33,34" +
 ",35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59" +
 ",60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84" +
-",85,86,10,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103")[0];
+",85,10,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102")[0];
 
-	private int yy_nxt[][] = unpackFromString(104,62,
-"1,2,3,4,5,6,7,8,3,9,7,10,119,152:2,154,63,156,152:2,86,11,121,64,62,89,152," +
-"153,158,152,160,12,13,14,15,16,17,18,19,20,21,22,23,7,24,64:2,155,64,157,64" +
-",87,120,122,90,159,64:3,166,7,152,-1:66,25,-1:64,26,-1:59,27,-1:66,28,-1:62" +
-",152,162,123,152:17,-1:13,152,123,152:6,162,152:9,-1:11,64:9,65,64:10,-1:13" +
-",64:7,65,64:10,-1:5,33,-1:3,34,-1:96,24,-1:28,152:20,-1:13,152:18,-1:11,152" +
-":18,146,152,-1:13,152:6,146,152:11,-1:4,52,-1:57,1,55,83:60,1,50,-1,51,82,8" +
-"8:57,-1:11,152:2,131,152:6,29,152:10,-1:13,152,131,152:5,29,152:10,-1:11,64" +
-":20,-1:13,64:18,-1:11,64:18,169,64,-1:13,64:6,169,64:11,-1:7,53,-1:56,83:60" +
-",-1,59,-1:40,60,-1:19,1,56,-1,57:39,58,84,57:18,-1:11,152:3,137,152,30,152:" +
-"4,30,31,152:8,-1:13,152:9,31,152:3,137,152:4,-1:11,64:3,167,64,66,64:4,66,6" +
-"7,64:8,-1:13,64:9,67,64:3,167,64:4,-1:11,152:5,32,152:4,32,152:9,-1:13,152:" +
-"18,-1:11,64:5,68,64:4,68,64:9,-1:13,64:18,-1:11,152:6,35,152:9,35,152:3,-1:" +
-"13,152:18,-1:11,64:6,69,64:9,69,64:3,-1:13,64:18,-1:11,152:19,36,-1:13,152:" +
-"15,36,152:2,-1:11,64:19,70,-1:13,64:15,70,64:2,-1:11,152:19,37,-1:13,152:15" +
-",37,152:2,-1:11,64:19,71,-1:13,64:15,71,64:2,-1:11,152:4,38,152:15,-1:13,15" +
-"2:5,38,152:12,-1:11,64:11,76,64:8,-1:13,64:9,76,64:8,-1:11,152:17,39,152:2," +
-"-1:13,152:11,39,152:6,-1:11,64:4,72,64:15,-1:13,64:5,72,64:12,-1:11,152:4,4" +
-"0,152:15,-1:13,152:5,40,152:12,-1:11,64:4,74,64:15,-1:13,64:5,74,64:12,-1:1" +
-"1,41,152:19,-1:13,152:3,41,152:14,-1:11,75,64:19,-1:13,64:3,75,64:14,-1:11," +
-"152:4,42,152:15,-1:13,152:5,42,152:12,-1:11,64:17,73,64:2,-1:13,64:11,73,64" +
-":6,-1:11,152:11,43,152:8,-1:13,152:9,43,152:8,-1:11,64,77,64:18,-1:13,64:8," +
-"77,64:9,-1:11,152,44,152:18,-1:13,152:8,44,152:9,-1:11,64:3,78,64:16,-1:13," +
-"64:13,78,64:4,-1:11,152:3,45,152:16,-1:13,152:13,45,152:4,-1:11,64:4,79,64:" +
-"15,-1:13,64:5,79,64:12,-1:11,152:4,46,152:15,-1:13,152:5,46,152:12,-1:11,64" +
-":15,80,64:4,-1:13,64:4,80,64:13,-1:11,152:4,47,152:15,-1:13,152:5,47,152:12" +
-",-1:11,64:3,81,64:16,-1:13,64:13,81,64:4,-1:11,152:15,48,152:4,-1:13,152:4," +
-"48,152:13,-1:11,152:3,49,152:16,-1:13,152:13,49,152:4,-1:11,152:4,91,152:9," +
-"125,152:5,-1:13,152:5,91,152:4,125,152:7,-1:11,64:4,92,64:9,132,64:5,-1:13," +
-"64:5,92,64:4,132,64:7,-1:11,152:4,93,152:9,95,152:5,-1:13,152:5,93,152:4,95" +
-",152:7,-1:11,64:4,94,64:9,96,64:5,-1:13,64:5,94,64:4,96,64:7,-1:11,152:3,97" +
-",152:16,-1:13,152:13,97,152:4,-1:11,64:4,98,64:15,-1:13,64:5,98,64:12,-1:11" +
-",152:14,99,152:5,-1:13,152:10,99,152:7,-1:11,64:3,100,64:16,-1:13,64:13,100" +
-",64:4,-1:11,152:3,101,152:16,-1:13,152:13,101,152:4,-1:11,64:3,102,64:16,-1" +
-":13,64:13,102,64:4,-1:11,152:2,103,152:17,-1:13,152,103,152:16,-1:11,64:2,1" +
-"04,64:17,-1:13,64,104,64:16,-1:11,152,144,152:18,-1:13,152:8,144,152:9,-1:1" +
-"1,64:14,106,64:5,-1:13,64:10,106,64:7,-1:11,152:8,105,152:11,-1:13,152:14,1" +
-"05,152:3,-1:11,64:14,108,64:5,-1:13,64:10,108,64:7,-1:11,152:4,107,152:15,-" +
-"1:13,152:5,107,152:12,-1:11,64:3,110,64:16,-1:13,64:13,110,64:4,-1:11,152:1" +
-"2,145:2,152:6,-1:13,152:18,-1:11,64,112,64:18,-1:13,64:8,112,64:9,-1:11,152" +
-":14,109,152:5,-1:13,152:10,109,152:7,-1:11,64:9,114,64:10,-1:13,64:7,114,64" +
-":10,-1:11,152:9,147,152:10,-1:13,152:7,147,152:10,-1:11,64:6,116,64:9,116,6" +
-"4:3,-1:13,64:18,-1:11,152:3,111,152:16,-1:13,152:13,111,152:4,-1:11,152:3,1" +
-"13,152:16,-1:13,152:13,113,152:4,-1:11,152:14,148,152:5,-1:13,152:10,148,15" +
-"2:7,-1:11,152:4,149,152:15,-1:13,152:5,149,152:12,-1:11,152,115,152:18,-1:1" +
-"3,152:8,115,152:9,-1:11,152:9,117,152:10,-1:13,152:7,117,152:10,-1:11,152:7" +
-",150,152:12,-1:13,152:12,150,152:5,-1:11,152:9,151,152:10,-1:13,152:7,151,1" +
-"52:10,-1:11,152:6,118,152:9,118,152:3,-1:13,152:18,-1:11,64:18,124,64,-1:13" +
-",64:6,124,64:11,-1:11,152,127,152,129,152:16,-1:13,152:8,127,152:4,129,152:" +
-"4,-1:11,64,161,126,64:17,-1:13,64,126,64:6,161,64:9,-1:11,152:7,133,152:10," +
-"135,152,-1:13,152:6,135,152:5,133,152:5,-1:11,64,128,64,130,64:16,-1:13,64:" +
-"8,128,64:4,130,64:4,-1:11,152:14,139,152:5,-1:13,152:10,139,152:7,-1:11,64:" +
-"14,134,64:5,-1:13,64:10,134,64:7,-1:11,152:18,141,152,-1:13,152:6,141,152:1" +
-"1,-1:11,64:2,136,64:17,-1:13,64,136,64:16,-1:11,152:2,143,152:17,-1:13,152," +
-"143,152:16,-1:11,64:9,138,64:10,-1:13,64:7,138,64:10,-1:11,64:14,140,64:5,-" +
-"1:13,64:10,140,64:7,-1:11,64:9,142,64:10,-1:13,64:7,142,64:10,-1:11,64:18,1" +
-"63,64,-1:13,64:6,163,64:11,-1:11,64:12,164:2,64:6,-1:13,64:18,-1:11,64:7,16" +
-"5,64:12,-1:13,64:12,165,64:5,-1:11,64:4,168,64:15,-1:13,64:5,168,64:12");
+	private int yy_nxt[][] = unpackFromString(103,62,
+"1,2,3,4,5,6,7,8,3,9,7,10,117,150:2,152,62,154,150:2,84,11,119,63,61,87,150," +
+"151,156,150,158,12,13,14,15,16,17,18,19,20,21,22,23,7,24,63:2,153,63,155,63" +
+",85,118,120,88,157,63:3,164,7,150,-1:66,25,-1:64,26,-1:59,27,-1:66,28,-1:62" +
+",150,160,121,150:17,-1:13,150,121,150:6,160,150:9,-1:11,63:9,64,63:10,-1:13" +
+",63:7,64,63:10,-1:5,33,-1:3,34,-1:96,24,-1:28,150:20,-1:13,150:18,-1:11,150" +
+":18,144,150,-1:13,150:6,144,150:11,-1:4,52,-1:57,1,55,82:60,1,50,-1,51,81,8" +
+"6:57,-1:11,150:2,129,150:6,29,150:10,-1:13,150,129,150:5,29,150:10,-1:11,63" +
+":20,-1:13,63:18,-1:11,63:18,167,63,-1:13,63:6,167,63:11,-1:7,53,-1:56,82:60" +
+",1,56,-1,57:39,58,59,57:18,-1:11,150:3,135,150,30,150:4,30,31,150:8,-1:13,1" +
+"50:9,31,150:3,135,150:4,-1:11,63:3,165,63,65,63:4,65,66,63:8,-1:13,63:9,66," +
+"63:3,165,63:4,-1:11,150:5,32,150:4,32,150:9,-1:13,150:18,-1:11,63:5,67,63:4" +
+",67,63:9,-1:13,63:18,-1:11,150:6,35,150:9,35,150:3,-1:13,150:18,-1:11,63:6," +
+"68,63:9,68,63:3,-1:13,63:18,-1:11,150:19,36,-1:13,150:15,36,150:2,-1:11,63:" +
+"19,69,-1:13,63:15,69,63:2,-1:11,150:6,37,150:9,37,150:3,-1:13,150:18,-1:11," +
+"63:6,70,63:9,70,63:3,-1:13,63:18,-1:11,150:4,38,150:15,-1:13,150:5,38,150:1" +
+"2,-1:11,63:11,75,63:8,-1:13,63:9,75,63:8,-1:11,150:17,39,150:2,-1:13,150:11" +
+",39,150:6,-1:11,63:4,71,63:15,-1:13,63:5,71,63:12,-1:11,150:4,40,150:15,-1:" +
+"13,150:5,40,150:12,-1:11,63:4,73,63:15,-1:13,63:5,73,63:12,-1:11,41,150:19," +
+"-1:13,150:3,41,150:14,-1:11,74,63:19,-1:13,63:3,74,63:14,-1:11,150:4,42,150" +
+":15,-1:13,150:5,42,150:12,-1:11,63:17,72,63:2,-1:13,63:11,72,63:6,-1:11,150" +
+":11,43,150:8,-1:13,150:9,43,150:8,-1:11,63,76,63:18,-1:13,63:8,76,63:9,-1:1" +
+"1,150,44,150:18,-1:13,150:8,44,150:9,-1:11,63:3,77,63:16,-1:13,63:13,77,63:" +
+"4,-1:11,150:3,45,150:16,-1:13,150:13,45,150:4,-1:11,63:4,78,63:15,-1:13,63:" +
+"5,78,63:12,-1:11,150:4,46,150:15,-1:13,150:5,46,150:12,-1:11,63:15,79,63:4," +
+"-1:13,63:4,79,63:13,-1:11,150:4,47,150:15,-1:13,150:5,47,150:12,-1:11,63:3," +
+"80,63:16,-1:13,63:13,80,63:4,-1:11,150:15,48,150:4,-1:13,150:4,48,150:13,-1" +
+":11,150:3,49,150:16,-1:13,150:13,49,150:4,-1:11,150:4,89,150:9,123,150:5,-1" +
+":13,150:5,89,150:4,123,150:7,-1:11,63:4,90,63:9,130,63:5,-1:13,63:5,90,63:4" +
+",130,63:7,-1:11,150:4,91,150:9,93,150:5,-1:13,150:5,91,150:4,93,150:7,-1:11" +
+",63:4,92,63:9,94,63:5,-1:13,63:5,92,63:4,94,63:7,-1:11,150:3,95,150:16,-1:1" +
+"3,150:13,95,150:4,-1:11,63:4,96,63:15,-1:13,63:5,96,63:12,-1:11,150:14,97,1" +
+"50:5,-1:13,150:10,97,150:7,-1:11,63:3,98,63:16,-1:13,63:13,98,63:4,-1:11,15" +
+"0:3,99,150:16,-1:13,150:13,99,150:4,-1:11,63:3,100,63:16,-1:13,63:13,100,63" +
+":4,-1:11,150:2,101,150:17,-1:13,150,101,150:16,-1:11,63:2,102,63:17,-1:13,6" +
+"3,102,63:16,-1:11,150,142,150:18,-1:13,150:8,142,150:9,-1:11,63:14,104,63:5" +
+",-1:13,63:10,104,63:7,-1:11,150:8,103,150:11,-1:13,150:14,103,150:3,-1:11,6" +
+"3:14,106,63:5,-1:13,63:10,106,63:7,-1:11,150:4,105,150:15,-1:13,150:5,105,1" +
+"50:12,-1:11,63:3,108,63:16,-1:13,63:13,108,63:4,-1:11,150:12,143:2,150:6,-1" +
+":13,150:18,-1:11,63,110,63:18,-1:13,63:8,110,63:9,-1:11,150:14,107,150:5,-1" +
+":13,150:10,107,150:7,-1:11,63:9,112,63:10,-1:13,63:7,112,63:10,-1:11,150:9," +
+"145,150:10,-1:13,150:7,145,150:10,-1:11,63:6,114,63:9,114,63:3,-1:13,63:18," +
+"-1:11,150:3,109,150:16,-1:13,150:13,109,150:4,-1:11,150:3,111,150:16,-1:13," +
+"150:13,111,150:4,-1:11,150:14,146,150:5,-1:13,150:10,146,150:7,-1:11,150:4," +
+"147,150:15,-1:13,150:5,147,150:12,-1:11,150,113,150:18,-1:13,150:8,113,150:" +
+"9,-1:11,150:9,115,150:10,-1:13,150:7,115,150:10,-1:11,150:7,148,150:12,-1:1" +
+"3,150:12,148,150:5,-1:11,150:9,149,150:10,-1:13,150:7,149,150:10,-1:11,150:" +
+"6,116,150:9,116,150:3,-1:13,150:18,-1:11,63:18,122,63,-1:13,63:6,122,63:11," +
+"-1:11,150,125,150,127,150:16,-1:13,150:8,125,150:4,127,150:4,-1:11,63,159,1" +
+"24,63:17,-1:13,63,124,63:6,159,63:9,-1:11,150:7,131,150:10,133,150,-1:13,15" +
+"0:6,133,150:5,131,150:5,-1:11,63,126,63,128,63:16,-1:13,63:8,126,63:4,128,6" +
+"3:4,-1:11,150:14,137,150:5,-1:13,150:10,137,150:7,-1:11,63:14,132,63:5,-1:1" +
+"3,63:10,132,63:7,-1:11,150:18,139,150,-1:13,150:6,139,150:11,-1:11,63:2,134" +
+",63:17,-1:13,63,134,63:16,-1:11,150:2,141,150:17,-1:13,150,141,150:16,-1:11" +
+",63:9,136,63:10,-1:13,63:7,136,63:10,-1:11,63:14,138,63:5,-1:13,63:10,138,6" +
+"3:7,-1:11,63:9,140,63:10,-1:13,63:7,140,63:10,-1:11,63:18,161,63,-1:13,63:6" +
+",161,63:11,-1:11,63:12,162:2,63:6,-1:13,63:18,-1:11,63:7,163,63:12,-1:13,63" +
+":12,163,63:5,-1:11,63:4,166,63:15,-1:13,63:5,166,63:12");
 
 	public java_cup.runtime.Symbol next_token ()
 		throws java.io.IOException {
@@ -666,7 +669,6 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 23:
 						{
     yybegin(STRING);
-    string_buf.setLength(0);
 }
 					case -24:
 						break;
@@ -872,205 +874,228 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 56:
 						{
     curr_lineno++;
-    yybegin(YYINITIAL);
-    return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+    // do not allow a newline if it is unescaped
+    if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
+        yybegin(YYINITIAL);
+        string_buf.setLength(0);
+        isPreviousBackslashEscaped = false;
+        return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+    }
+    // pop the escaping backslash
+    string_buf.setLength(string_buf.length() - 1);
+    string_buf.append(c);
 }
 					case -57:
 						break;
 					case 57:
 						{
-    string_buf.append(yytext());
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+    boolean replaced = false;
+    for (int i = 0; i < mappableCharacters.length; i++) {
+        char mappableCharacter = mappableCharacters[i];
+        if (!isPreviousBackslashEscaped && previousCharacterIsBackslash && mappableCharacter == c) { 
+            string_buf.setLength(string_buf.length() - 1);
+            string_buf.append(constantCharacters[i]);
+            replaced = true;
+            break;
+        }
+    }
+    if (!replaced) {
+        if (c == '\0') {
+            // catch unescaped null characters
+            if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
+                return new Symbol(TokenConstants.ERROR, "String contains null character");
+            }
+            // catch escaped null characters
+            return new Symbol(TokenConstants.ERROR, "String contains escaped null character.");
+        }
+        // remove previous backslash such that \c -> c.
+        if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+            string_buf.setLength(string_buf.length() - 1);	
+        }
+        string_buf.append(c);
+    }
 }
 					case -58:
 						break;
 					case 58:
 						{
-    yybegin(YYINITIAL);
-    String str = string_buf.toString();
-    StringBuffer newBuffer = new StringBuffer();
-    char[] mappableCharacters = { 'n', 'b', 't', 'f' };
-    char[] constantCharacters = { '\n', '\b', '\t', '\f' };
-    boolean isPreviousBackslashEscaped = false;
-    for (char c : str.toCharArray()) {
-        Character previousCharacter = null;
-        if (newBuffer.length() > 0) {
-            previousCharacter = newBuffer.charAt(newBuffer.length() - 1);
-        }
-		boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
-        if (c == '\\') {
-            if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
-                isPreviousBackslashEscaped = true;
-            } else {
-                newBuffer.append('\\');
-                isPreviousBackslashEscaped = false;
-            }
-        } else {
-            boolean replaced = false;
-            for (int i = 0; i < mappableCharacters.length; i++) {
-                char mappableCharacter = mappableCharacters[i];
-                if (!isPreviousBackslashEscaped && previousCharacterIsBackslash && mappableCharacter == c) { 
-                    newBuffer.setLength(newBuffer.length() - 1);
-                    newBuffer.append(constantCharacters[i]);
-                    replaced = true;
-                    break;
-                }
-            }
-            if (replaced) {
-				continue;
-            }
-            // catch unescaped null characters
-            if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
-                if (c == '\0') {
-                    return new Symbol(TokenConstants.ERROR, "String contains null character");
-                }
-            }
-            // remove previous backslash such that \c -> c.
-			if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
-				newBuffer.setLength(newBuffer.length() - 1);	
-			}
-			newBuffer.append(c);
-        }
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
     }
-    String newStr = newBuffer.toString();
-    AbstractSymbol symbol = AbstractTable.stringtable.addString(newStr, newStr.length());
-    return new Symbol(TokenConstants.STR_CONST, symbol);
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+    if (previousCharacterIsBackslash && !isPreviousBackslashEscaped) {
+        string_buf.setLength(string_buf.length() - 1);
+        string_buf.append(c);
+    } else {
+        yybegin(YYINITIAL);
+        String newStr = string_buf.toString();
+        string_buf.setLength(0);
+        isPreviousBackslashEscaped = false;
+        if (newStr.length() >= MAX_STR_CONST) {
+           return new Symbol(TokenConstants.ERROR, "String constant too long"); 
+        }
+        AbstractSymbol symbol = AbstractTable.stringtable.addString(newStr, newStr.length());
+        return new Symbol(TokenConstants.STR_CONST, symbol);
+    }
 }
 					case -59:
 						break;
 					case 59:
 						{
-    // escaped newline
-    curr_lineno++;
-    string_buf.append(yytext());
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+    if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+        isPreviousBackslashEscaped = true;
+    } else {
+        string_buf.append('\\');
+        isPreviousBackslashEscaped = false;
+    }
 }
 					case -60:
 						break;
-					case 60:
+					case 61:
 						{
-   string_buf.append('"');
+    // ignore whitespace
+    // not sure if \n is needed.
 }
 					case -61:
 						break;
 					case 62:
 						{
-    // ignore whitespace
-    // not sure if \n is needed.
+    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
+    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -62:
 						break;
 					case 63:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.OBJECTID, symbol); 
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -63:
 						break;
 					case 64:
 						{
-    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
+    return new Symbol(TokenConstants.FI);
 }
 					case -64:
 						break;
 					case 65:
 						{
-    return new Symbol(TokenConstants.FI);
+    return new Symbol(TokenConstants.IF);
 }
 					case -65:
 						break;
 					case 66:
 						{
-    return new Symbol(TokenConstants.IF);
+    return new Symbol(TokenConstants.IN);
 }
 					case -66:
 						break;
 					case 67:
 						{
-    return new Symbol(TokenConstants.IN);
+    return new Symbol(TokenConstants.OF);
 }
 					case -67:
 						break;
 					case 68:
 						{
-    return new Symbol(TokenConstants.OF);
+    return new Symbol(TokenConstants.LET);
 }
 					case -68:
 						break;
 					case 69:
 						{
-    return new Symbol(TokenConstants.LET);
+    return new Symbol(TokenConstants.NEW);
 }
 					case -69:
 						break;
 					case 70:
 						{
-    return new Symbol(TokenConstants.NEW);
+    return new Symbol(TokenConstants.NOT);
 }
 					case -70:
 						break;
 					case 71:
 						{
-    return new Symbol(TokenConstants.NOT);
+    return new Symbol(TokenConstants.CASE);
 }
 					case -71:
 						break;
 					case 72:
 						{
-    return new Symbol(TokenConstants.CASE);
+    return new Symbol(TokenConstants.LOOP);
 }
 					case -72:
 						break;
 					case 73:
 						{
-    return new Symbol(TokenConstants.LOOP);
+    return new Symbol(TokenConstants.ELSE);
 }
 					case -73:
 						break;
 					case 74:
 						{
-    return new Symbol(TokenConstants.ELSE);
+    return new Symbol(TokenConstants.ESAC);
 }
 					case -74:
 						break;
 					case 75:
 						{
-    return new Symbol(TokenConstants.ESAC);
+    return new Symbol(TokenConstants.THEN);
 }
 					case -75:
 						break;
 					case 76:
 						{
-    return new Symbol(TokenConstants.THEN);
+    return new Symbol(TokenConstants.POOL);
 }
 					case -76:
 						break;
 					case 77:
 						{
-    return new Symbol(TokenConstants.POOL);
+    return new Symbol(TokenConstants.CLASS);
 }
 					case -77:
 						break;
 					case 78:
 						{
-    return new Symbol(TokenConstants.CLASS);
+    return new Symbol(TokenConstants.WHILE);
 }
 					case -78:
 						break;
 					case 79:
 						{
-    return new Symbol(TokenConstants.WHILE);
+    return new Symbol(TokenConstants.ISVOID);
 }
 					case -79:
 						break;
 					case 80:
 						{
-    return new Symbol(TokenConstants.ISVOID);
+    return new Symbol(TokenConstants.INHERITS);
 }
 					case -80:
 						break;
 					case 81:
 						{
-    return new Symbol(TokenConstants.INHERITS);
 }
 					case -81:
 						break;
@@ -1079,33 +1104,36 @@ class CoolLexer implements java_cup.runtime.Scanner {
 }
 					case -82:
 						break;
-					case 83:
+					case 84:
 						{
+    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
+    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -83:
 						break;
-					case 84:
+					case 85:
 						{
-    string_buf.append(yytext());
+    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -84:
 						break;
 					case 86:
 						{
-    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -85:
 						break;
 					case 87:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
+    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -86:
 						break;
 					case 88:
 						{
+    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -87:
 						break;
@@ -1301,7 +1329,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 116:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
+    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -115:
 						break;
@@ -1315,7 +1343,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 118:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.OBJECTID, symbol); 
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -117:
 						break;
@@ -1483,7 +1511,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 142:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
+    return new Symbol(TokenConstants.OBJECTID, symbol); 
 }
 					case -141:
 						break;
@@ -1546,7 +1574,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 151:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.OBJECTID, symbol); 
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -150:
 						break;
@@ -1623,7 +1651,7 @@ class CoolLexer implements java_cup.runtime.Scanner {
 					case 162:
 						{
     AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.OBJECTID, symbol); 
+    return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -161:
 						break;
@@ -1661,20 +1689,6 @@ class CoolLexer implements java_cup.runtime.Scanner {
     return new Symbol(TokenConstants.TYPEID, symbol); 
 }
 					case -166:
-						break;
-					case 168:
-						{
-    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
-}
-					case -167:
-						break;
-					case 169:
-						{
-    AbstractSymbol symbol = AbstractTable.idtable.addString(yytext(), yylength());
-    return new Symbol(TokenConstants.TYPEID, symbol); 
-}
-					case -168:
 						break;
 					default:
 						yy_error(YY_E_INTERNAL,false);

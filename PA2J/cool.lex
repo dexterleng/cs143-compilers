@@ -21,7 +21,7 @@ import java_cup.runtime.Symbol;
 
     private int curr_lineno = 1;
     int get_curr_lineno() {
-	return curr_lineno;
+	    return curr_lineno;
     }
 
     private int commentANestLevel = 0;
@@ -29,12 +29,18 @@ import java_cup.runtime.Symbol;
     private AbstractSymbol filename;
 
     void set_filename(String fname) {
-	filename = AbstractTable.stringtable.addString(fname);
+	    filename = AbstractTable.stringtable.addString(fname);
     }
 
     AbstractSymbol curr_filename() {
-	return filename;
+	    return filename;
     }
+
+    // string lexing stuff
+    char[] mappableCharacters = { 'n', 'b', 't', 'f' };
+    char[] constantCharacters = { '\n', '\b', '\t', '\f' };
+    boolean isPreviousBackslashEscaped = false;
+    boolean previousCharacterIsBackslash = false;   
 %}
 
 %init{
@@ -180,7 +186,7 @@ import java_cup.runtime.Symbol;
 <YYINITIAL>[nN][eE][wW] {
     return new Symbol(TokenConstants.NEW);
 }
-<YYINITIAL>[nN][oO][wW] {
+<YYINITIAL>[nN][oO][tT] {
     return new Symbol(TokenConstants.NOT);
 }
 
@@ -273,87 +279,111 @@ import java_cup.runtime.Symbol;
 
 <YYINITIAL>\" {
     yybegin(STRING);
-    string_buf.setLength(0);
-}
-
-<STRING>\\\n {
-    // escaped newline
-    curr_lineno++;
-    string_buf.append(yytext());
 }
 
 <STRING>\n {
     curr_lineno++;
-    yybegin(YYINITIAL);
-    return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+
+    char c = yytext().charAt(0);
+
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+
+    // do not allow a newline if it is unescaped
+    if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
+        yybegin(YYINITIAL);
+        string_buf.setLength(0);
+        isPreviousBackslashEscaped = false;
+        return new Symbol(TokenConstants.ERROR, "Unterminated string constant");
+    }
+
+    // pop the escaping backslash
+    string_buf.setLength(string_buf.length() - 1);
+    string_buf.append(c);
 }
 
 <STRING>\" {
-    yybegin(YYINITIAL);
+    char c = yytext().charAt(0);
 
-    String str = string_buf.toString();
-    StringBuffer newBuffer = new StringBuffer();
-
-    char[] mappableCharacters = { 'n', 'b', 't', 'f' };
-    char[] constantCharacters = { '\n', '\b', '\t', '\f' };
-    boolean isPreviousBackslashEscaped = false;
-    for (char c : str.toCharArray()) {
-        Character previousCharacter = null;
-        if (newBuffer.length() > 0) {
-            previousCharacter = newBuffer.charAt(newBuffer.length() - 1);
-        }
-		boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
-
-        if (c == '\\') {
-            if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
-                isPreviousBackslashEscaped = true;
-            } else {
-                newBuffer.append('\\');
-                isPreviousBackslashEscaped = false;
-            }
-        } else {
-            boolean replaced = false;
-            for (int i = 0; i < mappableCharacters.length; i++) {
-                char mappableCharacter = mappableCharacters[i];
-                if (!isPreviousBackslashEscaped && previousCharacterIsBackslash && mappableCharacter == c) { 
-                    newBuffer.setLength(newBuffer.length() - 1);
-                    newBuffer.append(constantCharacters[i]);
-                    replaced = true;
-                    break;
-                }
-            }
-
-            if (replaced) {
-				continue;
-            }
-
-            // catch unescaped null characters
-            if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
-                if (c == '\0') {
-                    return new Symbol(TokenConstants.ERROR, "String contains null character");
-                }
-            }
-
-            // remove previous backslash such that \c -> c.
-			if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
-				newBuffer.setLength(newBuffer.length() - 1);	
-			}
-
-			newBuffer.append(c);
-        }
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
     }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
 
-    String newStr = newBuffer.toString();
-    AbstractSymbol symbol = AbstractTable.stringtable.addString(newStr, newStr.length());
-    return new Symbol(TokenConstants.STR_CONST, symbol);
+    if (previousCharacterIsBackslash && !isPreviousBackslashEscaped) {
+        string_buf.setLength(string_buf.length() - 1);
+        string_buf.append(c);
+    } else {
+        yybegin(YYINITIAL);
+        String newStr = string_buf.toString();
+        string_buf.setLength(0);
+        isPreviousBackslashEscaped = false;
+
+        if (newStr.length() >= MAX_STR_CONST) {
+           return new Symbol(TokenConstants.ERROR, "String constant too long"); 
+        }
+        
+        AbstractSymbol symbol = AbstractTable.stringtable.addString(newStr, newStr.length());
+        return new Symbol(TokenConstants.STR_CONST, symbol);
+    }
 }
 
-<STRING>\\\" {
-   string_buf.append('"');
+<STRING>\\ {
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+
+    if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+        isPreviousBackslashEscaped = true;
+    } else {
+        string_buf.append('\\');
+        isPreviousBackslashEscaped = false;
+    }
 }
 
 <STRING>. {
-    string_buf.append(yytext());
+    char c = yytext().charAt(0);
+    Character previousCharacter = null;
+    if (string_buf.length() > 0) {
+        previousCharacter = string_buf.charAt(string_buf.length() - 1);
+    }
+    boolean previousCharacterIsBackslash = previousCharacter != null && previousCharacter == '\\';
+
+    boolean replaced = false;
+    for (int i = 0; i < mappableCharacters.length; i++) {
+        char mappableCharacter = mappableCharacters[i];
+        if (!isPreviousBackslashEscaped && previousCharacterIsBackslash && mappableCharacter == c) { 
+            string_buf.setLength(string_buf.length() - 1);
+            string_buf.append(constantCharacters[i]);
+            replaced = true;
+            break;
+        }
+    }
+
+    if (!replaced) {
+        if (c == '\0') {
+            // catch unescaped null characters
+            if (!previousCharacterIsBackslash || isPreviousBackslashEscaped) {
+                return new Symbol(TokenConstants.ERROR, "String contains null character");
+            }
+            // catch escaped null characters
+            return new Symbol(TokenConstants.ERROR, "String contains escaped null character.");
+        }
+
+        // remove previous backslash such that \c -> c.
+        if (!isPreviousBackslashEscaped && previousCharacterIsBackslash) {
+            string_buf.setLength(string_buf.length() - 1);	
+        }
+
+        string_buf.append(c);
+    }
 }
 
 <YYINITIAL>[0-9]+ {
